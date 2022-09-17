@@ -28,6 +28,14 @@
         </template>
       </ul>
     </div>
+    <div class="flex flex-col gap-4">
+      <Suspense>
+        <CityList />
+        <template #fallback>
+          <CityCardSkeleton />
+        </template>
+      </Suspense>
+    </div>
   </main>
 </template>
 
@@ -35,193 +43,14 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import CityList from "../components/CityList.vue";
+import CityCardSkeleton from "../components/CityCardSkeleton.vue";
 
 const router = useRouter();
 const searchQuery = ref("");
 const queryTimeout = ref(null);
 // const searchReasults = ref(null);
-const searchReasults = ref([
-  {
-    description: "Halol, Gujarat, India",
-    matched_substrings: [
-      {
-        length: 4,
-        offset: 0,
-      },
-    ],
-    place_id: "ChIJWx_I8_B_YDkRZbk4EJ-UUvQ",
-    reference: "ChIJWx_I8_B_YDkRZbk4EJ-UUvQ",
-    structured_formatting: {
-      main_text: "Halol",
-      main_text_matched_substrings: [
-        {
-          length: 4,
-          offset: 0,
-        },
-      ],
-      secondary_text: "Gujarat, India",
-    },
-    terms: [
-      {
-        offset: 0,
-        value: "Halol",
-      },
-      {
-        offset: 7,
-        value: "Gujarat",
-      },
-      {
-        offset: 16,
-        value: "India",
-      },
-    ],
-    types: ["locality", "political", "geocode"],
-  },
-  {
-    description: "Haloli, Maharashtra, India",
-    matched_substrings: [
-      {
-        length: 4,
-        offset: 0,
-      },
-    ],
-    place_id: "ChIJa8ROUuMP5zsR72kPv1Io_jI",
-    reference: "ChIJa8ROUuMP5zsR72kPv1Io_jI",
-    structured_formatting: {
-      main_text: "Haloli",
-      main_text_matched_substrings: [
-        {
-          length: 4,
-          offset: 0,
-        },
-      ],
-      secondary_text: "Maharashtra, India",
-    },
-    terms: [
-      {
-        offset: 0,
-        value: "Haloli",
-      },
-      {
-        offset: 8,
-        value: "Maharashtra",
-      },
-      {
-        offset: 21,
-        value: "India",
-      },
-    ],
-    types: ["locality", "political", "geocode"],
-  },
-  {
-    description: "Halogy, Hungary",
-    matched_substrings: [
-      {
-        length: 4,
-        offset: 0,
-      },
-    ],
-    place_id: "ChIJo6OZhRfRbkcRDme040tI1Kc",
-    reference: "ChIJo6OZhRfRbkcRDme040tI1Kc",
-    structured_formatting: {
-      main_text: "Halogy",
-      main_text_matched_substrings: [
-        {
-          length: 4,
-          offset: 0,
-        },
-      ],
-      secondary_text: "Hungary",
-    },
-    terms: [
-      {
-        offset: 0,
-        value: "Halogy",
-      },
-      {
-        offset: 8,
-        value: "Hungary",
-      },
-    ],
-    types: ["locality", "political", "geocode"],
-  },
-  {
-    description: "Halondi, Maharashtra, India",
-    matched_substrings: [
-      {
-        length: 4,
-        offset: 0,
-      },
-    ],
-    place_id: "ChIJYWoEUnoBwTsR_PDG1VJ6tXg",
-    reference: "ChIJYWoEUnoBwTsR_PDG1VJ6tXg",
-    structured_formatting: {
-      main_text: "Halondi",
-      main_text_matched_substrings: [
-        {
-          length: 4,
-          offset: 0,
-        },
-      ],
-      secondary_text: "Maharashtra, India",
-    },
-    terms: [
-      {
-        offset: 0,
-        value: "Halondi",
-      },
-      {
-        offset: 9,
-        value: "Maharashtra",
-      },
-      {
-        offset: 22,
-        value: "India",
-      },
-    ],
-    types: ["locality", "political", "geocode"],
-  },
-  {
-    description: "Halong, Balangan Regency, South Kalimantan, Indonesia",
-    matched_substrings: [
-      {
-        length: 4,
-        offset: 0,
-      },
-    ],
-    place_id: "ChIJAeUpbOcB8C0Rg_VKvRM9f8o",
-    reference: "ChIJAeUpbOcB8C0Rg_VKvRM9f8o",
-    structured_formatting: {
-      main_text: "Halong",
-      main_text_matched_substrings: [
-        {
-          length: 4,
-          offset: 0,
-        },
-      ],
-      secondary_text: "Balangan Regency, South Kalimantan, Indonesia",
-    },
-    terms: [
-      {
-        offset: 0,
-        value: "Halong",
-      },
-      {
-        offset: 8,
-        value: "Balangan Regency",
-      },
-      {
-        offset: 26,
-        value: "South Kalimantan",
-      },
-      {
-        offset: 44,
-        value: "Indonesia",
-      },
-    ],
-    types: ["administrative_area_level_3", "political", "geocode"],
-  },
-]);
+const searchReasults = ref(null);
 const searchError = ref(null);
 
 const previewCity = async (searchResult) => {
@@ -269,11 +98,10 @@ const previewCity = async (searchResult) => {
 const getSearchResults = () => {
   clearTimeout(queryTimeout.value);
   queryTimeout.value = setTimeout(async () => {
-    return;
     if (searchQuery.value !== "") {
       try {
         const res = await axios.get(
-          "https://google-maps28.p.rapidapi.com/maps/api/place/autocomplete/json?input=halo&language=en&types=(cities)",
+          `https://google-maps28.p.rapidapi.com/maps/api/place/autocomplete/json?input=${searchQuery.value}&language=en&types=(cities)`,
           {
             headers: {
               "X-RapidAPI-Key":
@@ -284,7 +112,7 @@ const getSearchResults = () => {
         );
         console.log(res.data);
         searchReasults.value = res.data.predictions;
-        console.log(searchReasults.value);
+        // console.log(searchReasults.value);
       } catch (error) {
         console.log(error);
         searchError.value = true;
@@ -296,3 +124,38 @@ const getSearchResults = () => {
   }, 1000);
 };
 </script>
+
+<!-- 
+  const previewCity = (searchResult) => {
+  const [city, state] = searchResult.place_name.split(",");
+  router.push({
+    name: "cityView",
+    params: { state: state.replaceAll(" ", ""), city: city },
+    query: {
+      lat: searchResult.geometry.coordinates[1],
+      lng: searchResult.geometry.coordinates[0],
+      preview: true,
+    },
+  });
+};
+const mapboxAPIKey =
+  "pk.eyJ1Ijoiam9obmtvbWFybmlja2kiLCJhIjoiY2t5NjFzODZvMHJkaDJ1bWx6OGVieGxreSJ9.IpojdT3U3NENknF6_WhR2Q";
+
+const getSearchResults = () => {
+  clearTimeout(queryTimeout.value);
+  queryTimeout.value = setTimeout(async () => {
+    if (searchQuery.value !== "") {
+      try {
+        const result = await axios.get(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchQuery.value}.json?access_token=${mapboxAPIKey}&types=place`
+        );
+        searchReasults.value = result.data.features;
+      } catch {
+        searchError.value = true;
+      }
+      return;
+    }
+    searchReasults.value = null;
+  }, 300);
+};
+ -->

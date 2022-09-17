@@ -3,12 +3,13 @@
     <Suspense>
       <AyncCityView />
       <template #fallback>
-        <p>Loading...</p>
+        <CityViewSkeleton />
       </template>
     </Suspense>
   </div>
 </template>
 
 <script setup>
-import AyncCityView from "./AyncCityView.vue";
+import AyncCityView from "../components/AyncCityView.vue";
+import CityViewSkeleton from "../components/CityViewSkeleton.vue";
 </script>
